@@ -15,9 +15,14 @@ const BookListPage = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [nextPage, setNextPage] = useState(null);
+  const [fetchingMore, setFetchingMore] = useState(false);
 
   const fetchBooks = async (url, reset = false) => {
-    setLoading(true);
+    if (reset) {
+      setLoading(true);
+    } else {
+      setFetchingMore(true);
+    }
     try {
       const response = await axios.get(url);
 
@@ -45,6 +50,7 @@ const BookListPage = () => {
       console.error("Error fetching books:", error);
     } finally {
       setLoading(false);
+      setFetchingMore(false);
     }
   };
 
@@ -124,7 +130,7 @@ const BookListPage = () => {
         {/* Book List */}
         <div className="bg-[var(--white-color)] w-full">
           <div className="max-w-screen-xl mx-auto p-4 md:p-4">
-            {loading ? (
+            {loading && !fetchingMore ? (
               <p className="text-center text-gray-500">Loading...</p>
             ) : books.length === 0 ? (
               <p className="text-center text-gray-500">No books found.</p>
@@ -133,7 +139,7 @@ const BookListPage = () => {
                 dataLength={books.length}
                 next={() => fetchBooks(nextPage)}
                 hasMore={!!nextPage}
-                loader={<p>Loading more books...</p>}
+                loader={fetchingMore ? <p>Loading more books...</p> : null}
               >
                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-x-4 gap-y-6">
                   {books.map((book, index) => (
